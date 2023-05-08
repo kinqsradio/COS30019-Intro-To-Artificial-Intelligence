@@ -61,6 +61,15 @@ class Conjunction(Sentence):
     def symbols(self):
         return set.union(*[arg.symbols() for arg in self.args])
     
+    def conjunct_premise(self, conjunct):
+            return conjunct.args[0].symbols()
+    
+    def conjuncts(self):
+        return [arg for arg in self.args]
+    
+    def conjunct_conclusion(self, conjunct):
+        return conjunct.args[1].symbols().pop()
+    
     # Debug Function
     def print_arg_types(self):
         for arg in self.args:
