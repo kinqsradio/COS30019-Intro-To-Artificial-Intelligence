@@ -1,5 +1,6 @@
 from itertools import product
 from tabulate import tabulate
+from typing import List, Union
 from sentence_transformers import *
 
 '''THIS TRUTH TABLE IS WORKING TO ITS PERFECTION

@@ -17,6 +17,7 @@ class Symbol(Sentence):
     # Logical proposition with a specific truth value
     def __init__(self, name):
         self.name = name
+        self.known = False
 
     def __repr__(self):
         return self.name
@@ -59,6 +60,11 @@ class Conjunction(Sentence):
     # Return symbols in Conjunction
     def symbols(self):
         return set.union(*[arg.symbols() for arg in self.args])
+    
+    # Debug Function
+    def print_arg_types(self):
+        for arg in self.args:
+            print(type(arg))
 
 class Disjunction(Sentence):
     # Disjunction = Or | Symbol ||
@@ -87,6 +93,10 @@ class Implication(Sentence):
     # Return symbols in Implication
     def symbols(self):
         return set.union(*[arg.symbols() for arg in self.args])
+    
+    def print_arg_types(self):
+        print(f"{type(self.args[0])} => {type(self.args[1])}")
+
 
 class Biconditional(Sentence):
     # Symbol <=>
@@ -139,71 +149,3 @@ def model_check(knowledge, query):
 
     # Check that knowledge entails query
     return check_all(knowledge, query, symbols, dict())
-
-
-def forward_chaining(knowledge, query):
-    # Create a dictionary to hold the count of each symbol
-    count = {s: 0 for s in knowledge.symbols()}
-
-    # Create a dictionary to hold the inferred values of each symbol
-    inferred = {s: False for s in knowledge.symbols()}
-
-    # Initialize the agenda with known facts
-    agenda = [s for s in knowledge if isinstance(s, Symbol) and s.known]
-
-    # Loop until the agenda is empty
-    while agenda:
-        # Remove a symbol from the agenda
-        p = agenda.pop()
-
-        # If the symbol is the query, return True
-        if p == query:
-            return True
-
-        # If the symbol is not already inferred, mark it as inferred and update the count of its supported sentences
-        if not inferred[p]:
-            inferred[p] = True
-            for s in knowledge.sentences_containing_symbol(p):
-                count[s] += 1
-
-                # If all of the sentence's symbols have been inferred, add it to the agenda
-                if count[s] == len(s.symbols()):
-                    agenda.append(s)
-
-    # If the query was not found, return False
-    return False
-
-
-def backward_chaining(KB, q):
-    # Define a helper function to recursively evaluate each clause
-    def evaluate(clause):
-        # If the clause is a symbol, evaluate it
-        if isinstance(clause, Symbol):
-            return clause.known
-
-        # If the clause is a negation, evaluate its argument
-        elif isinstance(clause, Negation):
-            return not evaluate(clause.args[0])
-
-        # If the clause is a conjunction, evaluate its arguments
-        elif isinstance(clause, Conjunction):
-            return all(evaluate(arg) for arg in clause.args)
-
-        # If the clause is a disjunction, evaluate its arguments
-        elif isinstance(clause, Disjunction):
-            return any(evaluate(arg) for arg in clause.args)
-
-        # If the clause is an implication, evaluate its arguments
-        elif isinstance(clause, Implication):
-            return evaluate(clause.args[0]) <= evaluate(clause.args[1])
-
-        # If the clause is a biconditional, evaluate its arguments
-        elif isinstance(clause, Biconditional):
-            return evaluate(clause.args[0]) == evaluate(clause.args[1])
-
-    # Evaluate the query
-    return evaluate(q)
-
-
-
-

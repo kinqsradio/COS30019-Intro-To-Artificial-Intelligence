@@ -1,7 +1,10 @@
 from logic import *
+from ForwardChaining import *
+from BackwardChaining import *
 from truthtable import *
 from sentence_transformers import *
 import re
+
 
 '''Read from file'''
 def read(filename):
@@ -34,6 +37,7 @@ def extract_symbols_and_sentences(tell):
         sentences.append(sentence)
     return symbols, sentences
 
+
 def parse_sentences(symbols, sentences):
     sentence_objects = []
     
@@ -55,20 +59,20 @@ def parse_sentences(symbols, sentences):
 
     return Conjunction(*sentence_objects)
 
-
 '''Test Function'''
 # Read File
+# filename = 'test.txt'
 # filename = 'test_genericKB.txt' 
-filename = 'test_HornKB.txt'
+# filename = 'test_HornKB.txt'
 # filename = 'test_unproven.txt'
 # filename = 'test1.txt'
-# filename = 'test2.txt'
+filename = 'test2.txt'
 # filename = 'test3.txt'
 # filename = 'test4.txt'
 # filename = 'test5.txt'
 # filename = 'test6.txt'
 
-print(f'Debug filename: {filename}\n')
+print(f'\nDebug filename: {filename}\n')
 
 tell, query = read(filename)
 print(f'Tell: {tell}')
@@ -79,7 +83,7 @@ symbols, sentences = extract_symbols_and_sentences(tell)
 print(f'Symbols: {symbols}')
 print(f'Sentence: {sentences}\n')
 
-
+    
 # Create a dictionary to hold Symbol instances
 symbol_objects = {}
 
@@ -90,10 +94,14 @@ for symbol in symbols:
 print(f'Debug symbol dict: {symbol_objects}')
 print(f'Debug Length dict: {len(symbol_objects)}\n')
 
-knowledge_base = create_knowledge_base(sentences) # Transform sentence into logical sentence
-query_sentence = parse_sentences(symbols, query)
 
-print(f'Debug knowledge: {knowledge_base}')
+knowledge_base = create_knowledge_base(sentences) # Transform sentence into logical sentence
+query_sentence = parse(query)
+
+knowledge_base.print_arg_types()
+
+
+print(f'\nDebug knowledge: {knowledge_base}')
 print(f'Debug query: {query_sentence}\n')
 
 # Model Check
@@ -110,4 +118,22 @@ else:
 
 print(f'Truth Table Result: {entailed_symbols}\n')
     
-print(truth_table)
+# print(truth_table)
+
+'''Reverse Checking:'''
+kb_string = knowledge_base_to_string(knowledge_base)
+print(f'Current KB: {kb_string}')
+rv_knowledge = parse_knowledge_base(kb_string)
+print(f'Reverse checking: {rv_knowledge}\n')
+
+
+kb = KnowledgeBase()
+for sentence in sentences:
+    kb.add_sentence(sentence)
+    
+bc = BackwardChaining(kb)
+query = Symbol('d')
+
+result = bc.solve(query)
+print(f"Query: {query}")
+print(f"Result: {result}")
