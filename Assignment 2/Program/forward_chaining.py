@@ -24,8 +24,8 @@ class ForwardChaining:
             p = agenda.pop(0)
             chain.append(p)
             if p == self.query:
-                print("true")
-                chain.append(self.query)
+                # print("true")
+                # chain.append(self.query)
                 return True, chain
             if inferred[p] == False:
                 inferred[p] = True
@@ -35,19 +35,9 @@ class ForwardChaining:
                             count[conjunct] -= 1
                             if count[conjunct] == 0:
                                 agenda.append(self.KB.conjunct_conclusion(conjunct))
-        print("False")
+        # print("False")
         return False, []
     
     def solve(self):
         solution_found, chain = self.fc_entails()
-        if solution_found:
-            solution = "YES: "
-            for ele in chain:
-                if ele is chain[-1]:
-                    solution += ele
-                else:
-                    solution += ele + ", "
-        else:
-            solution = "NO"
-        return solution
-           
+        return "YES: " + ', '.join(chain) if solution_found else "NO"

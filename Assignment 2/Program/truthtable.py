@@ -2,10 +2,7 @@ from itertools import product
 from tabulate import tabulate
 from typing import List, Union
 from sentence_transformers import *
-
-'''THIS TRUTH TABLE IS WORKING TO ITS PERFECTION
-    PLEASE DON'T FIX OR TOUCH MY CODE :)
-                THANK YOU!'''
+from logic import *
 
 class TruthTable:
     def __init__(self, symbols, knowledgeBase, query):
@@ -33,13 +30,21 @@ class TruthTable:
             if all(evaluation) and self.query.evaluate(model):
                 self.count += 1
         return False
+    
+    def brute_force_check(self):
+        is_Valid = model_check(self.knowledgeBase, self.query)
+        return is_Valid
 
     def get_entailed_symbols(self):
         self.check_facts()
-        if self.count > 0:
+        valid = self.brute_force_check()
+
+        if self.count > 0 and valid:
             return f'YES: {self.count}'
         else:
-            return 'NO'
+            return f'NO {self.query} cannot be proven'
+        
+        
         
     def __str__(self):
         headers = [str(symbol) for symbol in self.symbols]

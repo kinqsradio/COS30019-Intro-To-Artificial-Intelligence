@@ -1,5 +1,4 @@
-class Sentence:
-    
+class Sentence:   
     # Logical sentence
     def __init__(self, *args):
         self.args = args
@@ -17,7 +16,6 @@ class Symbol(Sentence):
     # Logical proposition with a specific truth value
     def __init__(self, name):
         self.name = name
-        self.known = False
 
     def __repr__(self):
         return self.name
@@ -74,7 +72,7 @@ class Conjunction(Sentence):
     def print_arg_types(self):
         for arg in self.args:
             print(type(arg))
-
+        
 class Disjunction(Sentence):
     # Disjunction = Or | Symbol ||
     # Logical Disjunction
@@ -103,9 +101,9 @@ class Implication(Sentence):
     def symbols(self):
         return set.union(*[arg.symbols() for arg in self.args])
     
+    # Debug Function
     def print_arg_types(self):
         print(f"{type(self.args[0])} => {type(self.args[1])}")
-
 
 class Biconditional(Sentence):
     # Symbol <=>

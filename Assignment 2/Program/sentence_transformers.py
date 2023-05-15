@@ -5,6 +5,70 @@ from logic import *
 from typing import List, Union
 from lark.exceptions import ParseError
 
+class Parser:
+    def __init__(self, input):
+        self.input = input
+        self.position = 0
+
+    def consume_whitespace(self):
+        while self.position < len(self.input) and self.input[self.position].isspace():
+            self.position += 1
+
+    def match(self, string):
+        self.consume_whitespace()
+        if self.input.startswith(string, self.position):
+            self.position += len(string)
+            return True
+        return False
+
+    def parse_symbol(self):
+        self.consume_whitespace()
+        start_position = self.position
+        while self.position < len(self.input) and self.input[self.position].isalnum():
+            self.position += 1
+        return Symbol(self.input[start_position:self.position])
+
+    def parse_atom(self):
+        if self.match("("):
+            result = self.parse_biconditional()
+            if not self.match(")"):
+                raise Exception("Expected ')'")
+            return result
+        else:
+            return self.parse_symbol()
+
+    def parse_negation(self):
+        if self.match("~"):
+            return Negation(self.parse_atom())
+        else:
+            return self.parse_atom()
+
+    def parse_conjunction(self):
+        result = self.parse_disjunction()
+        while self.match("&"):
+            result = Conjunction(result, self.parse_disjunction())
+        return result
+
+    def parse_disjunction(self):
+        result = self.parse_negation()
+        while self.match("||"):
+            result = Disjunction(result, self.parse_negation())
+        return result
+
+    def parse_implication(self):
+        result = self.parse_conjunction()
+        while self.match("=>"):
+            result = Implication(result, self.parse_conjunction())
+        return result
+
+    def parse_biconditional(self):
+        result = self.parse_implication()
+        while self.match("<=>"):
+            result = Biconditional(result, self.parse_implication())
+        return result
+
+    def parse(self):
+        return self.parse_biconditional()
 
 class SentenceTransformer(Transformer):
     def symbol(self, args):
@@ -101,33 +165,34 @@ sentence_parser = Lark(r"""
     %ignore WS
 """, start='start', parser='lalr', transformer=SentenceTransformer())
 
-
-'''Second Best as this one shows error on generic form'''
-
-# sentence_parser = Lark(r"""
-#     ?start: biconditional
-#     ?biconditional: implication
-#                   | biconditional "<=>" implication
-#     ?implication: conjunction
-#                 | implication "=>" conjunction
-#     ?conjunction: disjunction
-#                 | conjunction "&" disjunction
-#     ?disjunction: atom
-#                 | disjunction "||" atom
-#     atom: symbol
-#         | parens
-#     parens: "(" biconditional ")"
-#     symbol: /[a-z0-9_]+/
-#     negation: "~" atom
-#     %import common.WS
-#     %ignore WS
-# """, start='start', parser='lalr', transformer=SentenceTransformer())
-
-'''End'''
-
+'''This parse method will not be using any
+    other libraries and the class is builds on 
+    Recursive Parser for Logical Expression'''
+    
 def parse(sentence):
+    return Parser(sentence).parse()
+
+
+'''This parse method will be using Lark 
+    which is the library of Python.
+    If you want to use it, feel free change the name to 
+    parse instead of parse1 and rename the above'''
+def parse1(sentence):
     return sentence_parser.parse(sentence)
 
+
+def create_knowledge_base(sentences):
+    parsed_sentences = []
+    for sentence in sentences:
+        print(f"Before parsing: {sentence}")
+        parsed_sentence = parse(sentence.strip())
+        print(f"After parsing: {parsed_sentence}")
+        parsed_sentences.append(parsed_sentence)
+    knowledge_base = Conjunction(*parsed_sentences)
+    return knowledge_base
+
+
+# Debug Functions 
 def parse_knowledge_base(kb_string):
     kb_list = []
 
@@ -179,16 +244,6 @@ def knowledge_base_to_string(kb_list):
     return kb_string[:-3]
 
 
-def create_knowledge_base(sentences):
-    parsed_sentences = []
-    for sentence in sentences:
-        print(f"Before parsing: {sentence}")
-        parsed_sentence = parse(sentence.strip())
-        print(f"After parsing: {parsed_sentence}")
-        parsed_sentences.append(parsed_sentence)
-    knowledge_base = Conjunction(*parsed_sentences)
-
-    return knowledge_base
 
 
 # sentences = ['p2=>p3', 'p3=>p1', 'c=>e', 'b&e=>f', 'f&g=>h', 'p1=>d', 'p1&p3=>c', 'a', 'b', 'p2']
