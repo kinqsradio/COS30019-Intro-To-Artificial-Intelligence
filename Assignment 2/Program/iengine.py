@@ -25,30 +25,26 @@ def main(filename):
 
     # Model Check
     is_Valid = model_check(knowledge_base, query_sentence)
-
-    # Create a TruthTable instance
-    truth_table = TruthTable(symbols, knowledge_base, query_sentence)
-    entailed_symbols = truth_table.get_entailed_symbols()
-
-    # Forward Chaining
-    fc = ForwardChaining(knowledge_base, query)
-    fc_result = fc.solve()
-
-    # Backward Chaining
-    bc = BackwardChaining(knowledge_base, query)
-    bc_result = bc.solve()
-
     # Output the results
     print('\nResults:')
-    print(entailed_symbols)
-    print(fc_result)
-    print(bc_result)
-    
-    print(truth_table)
+    if method == "TT":
+    # Create a TruthTable instance
+        truth_table = TruthTable(symbols, knowledge_base, query_sentence)
+        entailed_symbols = truth_table.get_entailed_symbols()
+        print(entailed_symbols)
+        print(truth_table)
+    elif method == "FC":
+    # Forward Chaining
+        fc = ForwardChaining(knowledge_base, query)
+        fc_result = fc.solve()
+        print(fc_result)
+    elif method == "BC":
+    # Backward Chaining
+        bc = BackwardChaining(knowledge_base, query)
+        bc_result = bc.solve()
+        print(bc_result)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print('You need to provide a filename as an argument.')
-        sys.exit(1)
-    filename = sys.argv[1]
-    main(filename)
+    method = sys.argv[1]
+    filename = sys.argv[2]
+    main(method, filename)
